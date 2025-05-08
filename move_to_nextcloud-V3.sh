@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Define Nextcloud path
+# Define Nextcloud path (modify if necessary)
 NEXTCLOUD_PATH="$HOME/Nextcloud"
 
 # Ask user for confirmation
@@ -17,23 +17,20 @@ if [ ! -d "$NEXTCLOUD_PATH" ]; then
     exit 1
 fi
 
-# Generate timestamp to avoid overwriting existing folders
-TIMESTAMP=$(date +"%Y%m%d_%H%M%S")
-
-# Check if Desktop folder already exists in Nextcloud, and create a new one if necessary
+# Move Desktop to Nextcloud ONLY if it exists, while preserving permissions
 if [ -d "$NEXTCLOUD_PATH/Desktop" ]; then
-    echo "Nextcloud Desktop folder already exists. Creating a new folder..."
-    NEW_DESKTOP="$NEXTCLOUD_PATH/Desktop_$TIMESTAMP"
-    mv "$HOME/Desktop" "$NEW_DESKTOP"
+    echo "Nextcloud Desktop folder already exists. Merging contents..."
+    rsync -a --progress "$HOME/Desktop/" "$NEXTCLOUD_PATH/Desktop/"
+    rm -rf "$HOME/Desktop"  # Remove original Desktop after merging
 else
     mv "$HOME/Desktop" "$NEXTCLOUD_PATH/Desktop"
 fi
 
-# Check if Documents folder already exists in Nextcloud, and create a new one if necessary
+# Move Documents to Nextcloud ONLY if it exists, while preserving permissions
 if [ -d "$NEXTCLOUD_PATH/Documents" ]; then
-    echo "Nextcloud Documents folder already exists. Creating a new folder..."
-    NEW_DOCUMENTS="$NEXTCLOUD_PATH/Documents_$TIMESTAMP"
-    mv "$HOME/Documents" "$NEW_DOCUMENTS"
+    echo "Nextcloud Documents folder already exists. Merging contents..."
+    rsync -a --progress "$HOME/Documents/" "$NEXTCLOUD_PATH/Documents/"
+    rm -rf "$HOME/Documents"  # Remove original Documents after merging
 else
     mv "$HOME/Documents" "$NEXTCLOUD_PATH/Documents"
 fi
@@ -47,4 +44,4 @@ killall Finder
 
 # Notify user
 echo "Successfully moved Desktop and Documents to Nextcloud."
-echo "If existing folders were detected, new ones were created with a timestamp."
+echo "Existing folders were merged, and permissions were preserved."
